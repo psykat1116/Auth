@@ -1,8 +1,35 @@
 import { db } from "@/lib/db";
+import crypto from "crypto";
 import { v4 as uuid } from "uuid";
-import { getVericationTokenByEmail } from "./VerificationToken";
 import { VerificationToken } from "@prisma/client";
-import { getPasswordTokenByEmail } from "./PasswordToken";
+
+import { get2FATokenByEmail } from "@/data/TwoFactorToken";
+import { getVericationTokenByEmail } from "@/data/VerificationToken";
+import { getPasswordTokenByEmail } from "@/data/PasswordToken";
+
+export const generate2FAToken = async (email: string) => {
+  const token = crypto.randomInt(100000, 1000000).toString();
+  const expires = new Date(new Date().getTime() + 900 * 1000);
+
+  const existingToken = await get2FATokenByEmail(email);
+  if (existingToken) {
+    await db.twoFactorToken.delete({
+      where: {
+        id: existingToken.id,
+      },
+    });
+  }
+
+  const newToken = await db.twoFactorToken.create({
+    data: {
+      email,
+      token,
+      expires,
+    },
+  });
+
+  return newToken;
+};
 
 export const generateVerificationToken = async (
   email: string
