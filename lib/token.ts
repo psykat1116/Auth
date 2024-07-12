@@ -9,7 +9,7 @@ import { getPasswordTokenByEmail } from "@/data/PasswordToken";
 
 export const generate2FAToken = async (email: string) => {
   const token = crypto.randomInt(100000, 1000000).toString();
-  const expires = new Date(new Date().getTime() + 900 * 1000);
+  const expires = new Date(new Date().getTime() + 300 * 1000);
 
   const existingToken = await get2FATokenByEmail(email);
   if (existingToken) {
