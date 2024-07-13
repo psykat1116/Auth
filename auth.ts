@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import authConfig from "@/auth.config";
 import { getUserById } from "@/data/User";
 import { get2FAConfirmationByUserId } from "@/data/TwoFactorConfirmation";
+import { getAccountById } from "./data/Account";
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
   pages: {
@@ -59,8 +60,13 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       if (token.role && session.user) {
         session.user.role = token.role;
       }
-      if (token.isTwoFactorEnabled && session.user) {
+      if (session.user) {
         session.user.isTwoFactorEnabled = token.isTwoFactorEnabled;
+        session.user.name = token.name;
+        session.user.isOAuth = token.isOAuth;
+      }
+      if (session.user && token.email) {
+        session.user.email = token.email;
       }
       return session;
     },
@@ -70,6 +76,11 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       if (!existingUser) {
         return token;
       }
+
+      const existingAccount = await getAccountById(existingUser.id);
+      token.isOAuth = !!existingAccount;
+      token.name = existingUser.name;
+      token.email = existingUser.email;
       token.role = existingUser.role;
       token.isTwoFactorEnabled = existingUser.isTwoFactorEnabled;
       return token;
