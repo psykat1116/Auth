@@ -1,13 +1,15 @@
 "use client";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import React, { useTransition, useState } from "react";
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { settings } from "@/action/settings";
-import { SettingsSchema } from "@/Schema";
+import { useTransition, useState } from "react";
+import { UserRole } from "@prisma/client";
+import { useForm } from "react-hook-form";
 import { useSession } from "next-auth/react";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import {
   Form,
   FormField,
@@ -17,10 +19,6 @@ import {
   FormMessage,
   FormDescription,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import FormError from "@/components/FormError";
-import FormSuccess from "@/components/FormSuccess";
-import { useCurrentUser } from "@/hook/useCurrentUser";
 import {
   Select,
   SelectContent,
@@ -28,8 +26,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { UserRole } from "@prisma/client";
-import { Switch } from "@/components/ui/switch";
+
+import FormError from "@/components/FormError";
+import { SettingsSchema } from "@/Schema";
+import { settings } from "@/action/settings";
+import FormSuccess from "@/components/FormSuccess";
+import { useCurrentUser } from "@/hook/useCurrentUser";
 
 const Page = () => {
   const user = useCurrentUser();
@@ -50,6 +52,8 @@ const Page = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof SettingsSchema>) => {
+    setError(undefined);
+    setSuccess(undefined);
     startTransition(() => {
       settings(values)
         .then((data) => {
